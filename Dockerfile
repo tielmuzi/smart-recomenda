@@ -22,12 +22,11 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY backend ./backend
 COPY --from=frontend-build /app/dist ./dist
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN useradd --system --create-home appuser \
     && mkdir -p /app/data \
-    && chown -R appuser:appuser /app/data
-
-USER appuser
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "export APP_PORT=\"${PORT:-${APP_PORT:-8000}}\"; exec python -m uvicorn backend.app.main:app --host \"${APP_HOST:-0.0.0.0}\" --port \"$APP_PORT\""]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

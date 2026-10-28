@@ -277,6 +277,8 @@ footer button { color: #8ba2ca; text-decoration: underline; }
 .auth-card h1 { margin: 0; font: 700 30px 'Space Grotesk'; letter-spacing: -1px; }
 .auth-card > p:not(.eyebrow) { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
 .auth-card > small { margin-top: 4px; color: #8296b8; font-size: 11px; line-height: 1.6; }
+.auth-options { display: grid; gap: 10px; width: 100%; }
+.auth-options .primary-button, .auth-options .secondary-button { width: 100%; text-align: center; }
 .auth-login { text-decoration: none; }
 .auth-error { width: 100%; padding: 12px 14px; color: #ffd4d4; border: 1px solid rgba(255, 131, 131, .28); background: rgba(128, 37, 50, .2); border-radius: 9px; font-size: 12px; line-height: 1.5; }
 .auth-card .spinner { width: 26px; height: 26px; }

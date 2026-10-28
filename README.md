@@ -76,7 +76,7 @@ A imagem compila o frontend, inicia a API em produção e serve a aplicação es
 O repositório inclui configuração para Vercel (frontend estático com fallback SPA e proxy same-origin em `api/[...path].js`) e Railway (API via Dockerfile, health check e porta dinâmica `PORT`).
 
 1. Publique o repositório no Git e crie um projeto Railway apontando para a raiz. Railway usa `railway.json` e o `Dockerfile`; gere um domínio público HTTPS para o serviço.
-2. No Railway, crie um volume montado em `/app/data` e configure:
+2. No Railway, crie um volume montado em `/app/data` e configure. O container corrige automaticamente a permissão desse volume antes de iniciar a API, então o processo da aplicação continua rodando como usuário sem privilégios:
 
    ```text
    APP_ENV=production
@@ -117,7 +117,7 @@ pnpm build
 
 ## Acesso acadêmico e autenticação
 
-Para facilitar a avaliação, `DEMO_ACCESS=true` (padrão) libera a aplicação sem cadastro ou login usando o perfil compartilhado “Visitante acadêmico”. As preferências e interações nessa demonstração são compartilhadas; o visitante não tem papel administrativo e não pode acessar o painel nem criar conteúdo. Configure `DEMO_ACCESS=false` para exigir login em todas as rotas personalizadas. Se um usuário possui uma sessão Manus válida, ela continua sendo reconhecida mesmo quando o acesso de demonstração está ligado.
+Por padrão, a autenticação está desabilitada no código (`AUTH_ENABLED = False` em `backend/app/main.py`) e a aplicação abre diretamente com o perfil compartilhado “Visitante acadêmico”. Para reativar o login, altere essa constante para `True`, configure as variáveis `AUTH_*` e faça um novo deploy. Com a autenticação desabilitada, as credenciais OAuth existentes não são usadas e todas as rotas funcionam no modo visitante; preferências e interações continuam compartilhadas nesse perfil.
 
 O login Manus opcional usa autorização de código, verificação de `state` e nonce vinculado ao navegador. O backend troca o código no servidor e busca a identidade antes de criar uma sessão. Nenhum access token do provedor é guardado. Cadastre o callback exato na configuração OAuth do projeto Manus; localhost só funciona se o provedor o permitir.
 

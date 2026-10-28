@@ -37,7 +37,10 @@ AUTH_CALLBACK_URL = os.getenv("AUTH_CALLBACK_URL", f"{FRONTEND_ORIGIN.rstrip('/'
 AUTH_COOKIE_NAME = "webdev_app_session"
 AUTH_SESSION_SECONDS = 8 * 60 * 60
 AUTH_STATE_SECONDS = 10 * 60
-DEMO_ACCESS = os.getenv("DEMO_ACCESS", "true").lower() == "true"
+# Keep authentication disabled for the public deployment. Set this to True
+# when the OAuth provider and AUTH_* variables are ready.
+AUTH_ENABLED = False
+DEMO_ACCESS = True if not AUTH_ENABLED else os.getenv("DEMO_ACCESS", "true").lower() == "true"
 AUTH_COOKIE_SECURE = APP_ENV == "production" or os.getenv("AUTH_COOKIE_SECURE", "true").lower() == "true"
 AUTH_COOKIE_SAMESITE = "none" if APP_ENV == "production" else os.getenv("AUTH_COOKIE_SAMESITE", "none").lower()
 if AUTH_COOKIE_SAMESITE not in {"lax", "strict", "none"}:
@@ -447,7 +450,7 @@ async def enforce_request_origin(request: Request, call_next):
 
 @app.get("/api/v1/auth/config")
 def get_auth_config():
-    return {"enabled": auth_configured(), "demo_access": DEMO_ACCESS}
+    return {"enabled": AUTH_ENABLED and auth_configured(), "demo_access": DEMO_ACCESS}
 
 @app.get("/api/v1/auth/login")
 def auth_login():

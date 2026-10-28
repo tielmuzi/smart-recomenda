@@ -38,6 +38,7 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authEnabled, setAuthEnabled] = useState(false);
   const [demoAccess, setDemoAccess] = useState(false);
+  const [authChoice, setAuthChoice] = useState<'demo' | null>(null);
   const [authError, setAuthError] = useState('');
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -65,6 +66,11 @@ export default function App() {
           return;
         }
         if (!mounted) return;
+        if (authenticatedUser.demo && !authChoice && config.enabled) {
+          setLoading(false);
+          setAuthReady(true);
+          return;
+        }
         setUser(authenticatedUser);
         const [catalog, recs, saved, favs] = await Promise.all([
           api.contents(),
@@ -88,7 +94,7 @@ export default function App() {
     };
     void loadSession();
     return () => { mounted = false; };
-  }, []);
+  }, [authChoice]);
   useEffect(() => { if (toast) { const timer = setTimeout(() => setToast(''), 3200); return () => clearTimeout(timer); } }, [toast]);
 
   const filtered = useMemo(() => contents.filter((item) => (activeType === 'Todos' || item.type === activeType) && (activeGenre === 'Todos' || item.genres.includes(activeGenre)) && (activeLanguage === 'Todos' || item.language === activeLanguage) && (!query || `${item.title} ${item.description} ${item.genres.join(' ')}`.toLowerCase().includes(query.toLowerCase()))), [contents, activeType, activeGenre, activeLanguage, query]);
@@ -151,7 +157,7 @@ export default function App() {
   };
 
   if (!authReady || loading) return <AuthScreen loading />;
-  if (!user) return <AuthScreen enabled={authEnabled} demoAccess={demoAccess} error={authError} />;
+  if (!user) return <AuthScreen enabled={authEnabled} demoAccess={demoAccess} error={authError} onGuest={() => { setAuthError(''); setLoading(true); setAuthChoice('demo'); }} />;
 
   const navItems = [{ path: '/', label: 'Início', icon: Home }, { path: '/buscar', label: 'Explorar', icon: Compass }, { path: '/favoritos', label: 'Favoritos', icon: Heart }, { path: '/historico', label: 'Histórico', icon: Clock3 }];
   const title = page === '/' ? 'Seu próximo acerto começa aqui' : page === '/buscar' ? 'Explore sem ruído' : page === '/favoritos' ? 'Sua curadoria pessoal' : page === '/historico' ? 'O que passou pelo seu radar' : page === '/preferencias' ? 'Ajuste seu sinal' : page === '/perfil' ? 'Seu espaço, suas regras' : page === '/como-recomendamos' ? 'Transparência que orienta' : page === '/admin' ? 'Painel de operação' : 'Descubra novos sinais';
@@ -164,16 +170,16 @@ export default function App() {
   </div>;
 }
 
-function AuthScreen({ loading = false, enabled = false, demoAccess = false, error = '' }: { loading?: boolean; enabled?: boolean; demoAccess?: boolean; error?: string }) {
+function AuthScreen({ loading = false, enabled = false, demoAccess = false, error = '', onGuest }: { loading?: boolean; enabled?: boolean; demoAccess?: boolean; error?: string; onGuest?: () => void }) {
   return <main className="auth-screen">
     <section className="auth-card">
       <Logo />
       <span className="banner-icon"><ShieldCheck size={23} /></span>
       <p className="eyebrow">SUA CONTA, SUAS RECOMENDAÇÕES</p>
-      <h1>{loading ? 'Verificando sua sessão' : demoAccess ? 'Acesso acadêmico disponível' : 'Entre para continuar'}</h1>
-      <p>{loading ? 'Estamos preparando seu acesso seguro.' : demoAccess ? 'Você pode avaliar o SmartRecomenda sem criar uma conta. Acesse a demonstração diretamente.' : 'Acesse sua curadoria, preferências e histórico com sua conta autenticada.'}</p>
+      <h1>{loading ? 'Verificando sua sessão' : demoAccess ? 'Como você quer acessar?' : 'Entre para continuar'}</h1>
+      <p>{loading ? 'Estamos preparando seu acesso seguro.' : demoAccess ? 'Escolha uma opção: entre para salvar sua curadoria em uma conta ou continue como visitante, sem criar login.' : 'Acesse sua curadoria, preferências e histórico com sua conta autenticada.'}</p>
       {loading ? <div className="spinner" /> : demoAccess
-        ? <button className="primary-button" onClick={() => window.location.reload()}>Abrir demonstração</button>
+        ? <div className="auth-options"><button className="primary-button" onClick={onGuest}>Continuar sem login</button>{enabled && <a className="secondary-button auth-login" href={api.loginUrl}>Entrar com autenticação</a>}</div>
         : enabled
         ? <a className="primary-button auth-login" href={api.loginUrl}>Entrar com Auth</a>
         : <div className="auth-error">{error || 'O login ainda não está disponível.'}</div>}
