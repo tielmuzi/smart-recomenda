@@ -1,0 +1,10 @@
+node_modules/
+dist/
+smartrecomenda.db
+*.pyc
+__pycache__/
+.pytest_cache/
+.venv/
+.env
+.env.*
+!.env.example
